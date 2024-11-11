@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "111660816777",
+    "project_id": "pushnotifications-ef4ee",
+    "storage_bucket": "pushnotifications-ef4ee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:111660816777:android:2941066c9637578edea958",
+        "android_client_info": {
+          "package_name": "com.anonymous.fronted"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZCm0SGTZU7w2YzNmXXFsRiqa59oITRC8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
