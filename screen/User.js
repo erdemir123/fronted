@@ -1,36 +1,37 @@
-import React from 'react';
-import { View, Text, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { useGetUsersQuery } from '../features/mainSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import { logOut } from '../features/authSlice';
-import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import PushNotification from 'react-native-push-notification';
-import { useLogOutMutation } from '../features/apiSlice';
-
+import React from "react";
+import {
+  View,
+  Text,
+  Button,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { useGetUsersQuery } from "../features/mainSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { logOut, logOutUser, setCredentials } from "../features/authSlice";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import PushNotification from "react-native-push-notification";
+import { useLogOutMutation } from "../features/apiSlice";
 
 const User = () => {
   const navigation = useNavigation();
   const { data, error, isLoading } = useGetUsersQuery();
   const [logOut] = useLogOutMutation();
- 
 
   const dispatch = useDispatch();
-
-  const accessToken = useSelector(state => state.auth.accessToken);
-  const user = useSelector(state => state.auth.user);
-  console.log("accessToken====>",accessToken)
+  const user = useSelector((state) => state.auth.user);
+  console.log("accessToken====>", user);
 
   const handleLogout = async () => {
     console.log("Çıkış işlemi başlıyor...");
     try {
       // Sunucudan çıkış yap
       await logOut().unwrap();
-  
-     
-  
+      dispatch(logOutUser())
       // Giriş ekranına yönlendir
-      navigation.navigate("LoginUser");
     } catch (error) {
       console.error("Çıkış yaparken hata oluştu:", error);
     }
@@ -47,37 +48,36 @@ const User = () => {
     });
   };
   const testNotification = () => {
-   
-    const channelId = 'my-channel';
+    const channelId = "my-channel";
     createChannel(channelId); // Kanalı oluştu
-      PushNotification.localNotification({
-        channelId: channelId,
-        title: 'Test Notification',
-        message: 'This is a test notification',
-        playSound: true,
-        soundName: 'default',
-      }); 
+    PushNotification.localNotification({
+      channelId: channelId,
+      title: "Test Notification",
+      message: "This is a test notification",
+      playSound: true,
+      soundName: "default",
+    });
   };
-  
-
 
   return (
     <View style={styles.container}>
-     <Text> {user?.username}</Text>
-      <TouchableOpacity  onPress={handleLogout} className="bg-blue-500 px-4 py-2 rounded" ><Text>Çıkış Yap</Text></TouchableOpacity>
-      
-      <Text>k{accessToken}</Text>
+      <Text> {user?.username}</Text>
+
+      <TouchableOpacity
+        onPress={handleLogout}
+        className="bg-blue-500 px-4 py-2 rounded"
+      >
+        <Text>Çıkış Yap</Text>
+      </TouchableOpacity>
+
       <Button title="Test Notification" onPress={testNotification} />
-      <FlatList
-        data={data?.data || []}
-        keyExtractor={(item) => item._id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text style={styles.username}>{item.username}</Text>
-            <Text>{item.email}</Text>
-          </View>
-        )}
+      <Image
+        source={{ uri: `http://10.0.2.2:8000${user?.profileImage}` }}
+        className="w-20 h-20 rounded-full border border-slate-500"
       />
+      <TouchableOpacity onPress={() => navigation.openDrawer()}>
+        <Text>Aç Drawer</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -86,15 +86,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor:"red"
+    backgroundColor: "#fff",
   },
   item: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
   },
   username: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 

@@ -1,67 +1,25 @@
-import { View, Text } from "react-native";
 import React, { useEffect, useState } from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Login from "../screen/Login";
-import User from "../screen/User";
+
 import { useDispatch, useSelector } from "react-redux";
 import firebase from "@react-native-firebase/app";
 import messaging from "@react-native-firebase/messaging";
-import PushNotification, { Importance } from "react-native-push-notification";
+import PushNotification from "react-native-push-notification";
 import useFcmToken from "../hooks/useFcmToken";
 
+import LoginNav from "./LoginNav";
+import DrawerNav from "./DrawerNav";
 
-const StackNav = () => {
-  const Stack = createNativeStackNavigator();
-
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        statusBarColor: "#0163d2",
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: "#0163d2",
-        },
-        headerTintColor: "#fff",
-        headerTitleAlign: "center",
-      }}
-    >
-      <Stack.Screen
-        name="User"
-        component={User}
-        options={{
-          headerShown: true,
-        }}
-      />
-
-      <Stack.Screen name="LoginUser" component={LoginNav} />
-    </Stack.Navigator>
-  );
-};
-const LoginNav = () => {
-  const Stack = createNativeStackNavigator();
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="StackNav" component={StackNav} />
-    </Stack.Navigator>
-  );
-};
 const MainStack = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const { accessToken } = useSelector(state => state.auth);
+  const { accessToken } = useSelector((state) => state.auth);
   useFcmToken();
   useEffect(() => {
     if (accessToken) {
       setIsLoggedIn(true);
-     
     } else {
       setIsLoggedIn(false);
     }
-  }, [accessToken]); 
+  }, [accessToken]);
   const firebaseConfig = {
     apiKey: "AIzaSyBZCm0SGTZU7w2YzNmXXFsRiqa59oITRC8",
     authDomain: "pushnotifications-ef4ee.firebaseapp.com",
@@ -72,37 +30,33 @@ const MainStack = () => {
   };
 
   const createChannel = (channelId) => {
-    PushNotification.createChannel({
-      channelId: channelId, // (required)
-      channelName: "My channel", // (required)
-      channelDescription: "A channel to categorise your notifications", // (optional) default: undefined.
-      playSound: false, // (optional) default: true
-      soundName: "default", // (optional) See `soundName` parameter of `localNotification` function
-      importance: PushNotification.Importance.HIGH, // (optional) default: Importance.HIGH. Int value of the Android notification importance
-      vibrate: true, // (optional) default: true. Creates the default vibration patten if true.
-    });
+    PushNotification.createChannel(
+      {
+        channelId: channelId, // (required)
+        channelName: "My channel", // (required)
+        channelDescription: "A channel to categorise your notifications", // (optional) default: undefined.
+        playSound: true, // (optional) default: true
+        soundName: "default", // (optional) See `soundName` parameter of `localNotification` function
+        importance: PushNotification.Importance.HIGH, // (optional) default: Importance.HIGH
+        vibrate: true, // (optional) default: true
+      },
+      (created) => console.log(`Channel created: ${created}`)
+    );
+    return channelId; // Kanal ID'sini döndür
   };
   const showNotification = (options) => {
-    console.log("options", options);
-  
-    // Kanal oluşturma
-    const channelId = options.channelId || "default-channel";
-    createChannel(channelId);
-  
-    // Bildirimi gönderme
+    console.log("Notification Options:", options);
     PushNotification.localNotification({
-      channelId: channelId,
+      channelId: options.channelId, // Kanal ID
       title: options.title,
-      message: options.message,  // Buradaki hatayı düzelttik
+      message: options.message, 
       subText: options.subText,
       playSound: true,
-      soundName: 'default',
-      color: options.color || "red",  // Varsayılan renk kırmızı
-      bigPictureUrl: options.bigImage,  // Büyük resim URL'si
-      priority: "high",  // Yüksek öncelik
-      vibrate: true,  // Bildirimde titreşim
-      vibrateTimings: [200, 500, 800],
-      imageUrl: options.bigImage,  // Görsel ekleme
+      soundName: "default",
+      color: options.color || "red",
+      bigPictureUrl: options.bigImage,
+      priority: "high",
+      vibrate: true,
     });
   };
   
@@ -111,48 +65,43 @@ const MainStack = () => {
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
-    messaging()
-      .getToken()
-      .then((token) => {
-        console.log(`Token: ${token}`);
-      });
-
-      const unsubscribe = messaging().onMessage(async (remoteMsg) => {
-        const channelId = Math.random().toString(36).substring(7);  // Kanal ID'si oluşturuluyor
-        createChannel(channelId);  // Kanalı oluştur
-      
-        const options = {
-          channelId: channelId,
-          title: remoteMsg.notification?.android?.title,  // Başlık
-          message: remoteMsg.notification?.android?.body,  // Mesaj içeriği
-          subText: remoteMsg.data?.subTitle || "Aybars Gokce Erdemir",  // Alt metin
-          color: remoteMsg.notification?.android?.color || "red",  // Renk
-          bigImage: remoteMsg.notification?.android?.imageUrl || "Varsayılan Resim URL",  // Büyük resim
-        };
-      
-        showNotification(options);  // Bildirimi tetikle
-        console.log("remoteMsg", remoteMsg);  // Gelen mesajı konsola yazdır
-      });
-      
-    messaging().setBackgroundMessageHandler(async (remoteMsg) => {
-      console.log(`remoteMsg Background`, remoteMsg);
+  
+    // Firebase token'ı al
+    // messaging()
+    //   .getToken()
+    //   .then((token) => {
+    //     console.log(`Token: ${token}`);
+    //   });
+  
+    // Mesaj dinleyicisini ekle
+    const unsubscribe = messaging().onMessage(async (remoteMsg) => {
+      console.log("Received remote message:", remoteMsg);
+  
+      const channelId = Math.random().toString(36).substring(7); // Rastgele kanal ID oluştur
+      createChannel(channelId); // Kanal oluştur
+  
+      const options = {
+        channelId: channelId, // Kullanılacak kanal ID'si
+        title: remoteMsg.notification?.title || "Varsayılan Başlık", // Bildirim başlığı
+        message: remoteMsg.notification?.body || "Varsayılan Mesaj", // Bildirim mesajı
+        subText: remoteMsg.data?.subTitle || "Alt Başlık Yok", // Alt başlık
+        color: remoteMsg.notification?.android?.color || "red", // Renk
+        bigImage: remoteMsg.notification?.android?.imageUrl || null, // Büyük resim
+      };
+  
+      // Bildirimi göster
+      showNotification(options);
     });
-
+  
+    messaging().setBackgroundMessageHandler(async (remoteMsg) => {
+      console.log("Background message received:", remoteMsg);
+    });
+  
     return unsubscribe;
   }, []);
-  // useEffect(() => {
-  //   const channelId = 'my-channel';
-  // createChannel(channelId); // Kanalı oluştu
-  //   PushNotification.localNotification({
-  //     channelId: channelId,
-  //     title: 'Test Notification',
-  //     message: 'This is a test notification',
-  //     playSound: true,
-  //     soundName: 'default',
-  //   });
-  // },[])
+  
 
-  return isLoggedIn ? <StackNav /> : <LoginNav />;
+  return <>{isLoggedIn ? <DrawerNav /> : <LoginNav />}</>;
 };
 
 export default MainStack;

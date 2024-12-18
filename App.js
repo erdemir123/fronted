@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import "react-native-gesture-handler";
 import { Provider } from "react-redux";
 import store from "./store";
 
@@ -12,6 +11,8 @@ import { Platform, View } from "react-native";
 import PushNotification from "react-native-push-notification";
 
 import messaging from "@react-native-firebase/messaging";
+import Alert from "./components/modal/Alert";
+
 
 // Must be outside of any component LifeCycle (such as `componentDidMount`).
 // PushNotification.configure({
@@ -57,20 +58,19 @@ export default function App() {
         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
       if (enabled) {
-        console.log("FCM permission granted.");
+        
       }
     }
 
     requestPermission();
   }, []);
   return (
-  
-
     <Provider store={store}>
+      
       <NavigationContainer>
         <MainStack />
       </NavigationContainer>
-    </Provider> 
-   
+      <Alert />
+    </Provider>
   );
 }

@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { setCredentials, logOut } from "./authSlice";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setCredentials, logOutUser } from "./authSlice";
 
 // Temel sorgu ayarları
 const baseQuery = fetchBaseQuery({
@@ -16,16 +15,17 @@ const baseQuery = fetchBaseQuery({
     return headers;
   },
 });
-
+console.log("asr")
 // Token yenileme işlemi için temel sorgu
 const baseQueryWithReauth = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
-
+console.log(result,"result")
   if (result?.error?.status === 403) {
  
 
     try {
       // Refresh token isteğini gönder
+      console.log("first,burası çalışıyor")
       const refreshResult = await baseQuery(
         {
           url: "/auth/refresh",
@@ -36,10 +36,11 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
         extraOptions
       );
 
-
       if (refreshResult?.data) {
         const userData = refreshResult.data.user;
+        console.log(userData,"userData")
         accessToken = refreshResult.data.bearer.access;
+        console.log(accessToken,"accessToken")
 
         api.dispatch(
           setCredentials({ bearer: refreshResult.data.bearer, user: userData })
@@ -48,7 +49,8 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
         // Yeniden orijinal isteği yap
         result = await baseQuery(args, api, extraOptions);
       } else {
-        api.dispatch(logOut());
+        console.log("burası çalışıyor")
+        api.dispatch(logOutUser());
         return { error: { status: 401, message: "Unauthorized" } };
       }
     } catch (error) {
@@ -71,10 +73,13 @@ export const mainSlice = createApi({
     getUsers: builder.query({
       query: () => "/users", // Kullanıcıları almak için bir uç nokta
     }),
+    getHabits: builder.query({
+      query: () => "/habits", // Kullanıcıları almak için bir uç nokta
+    }),
     addFcmToken: builder.mutation({
       query: (credentials) => ({
         url: '/fcm_tokens',
-        method: 'Post', // Çıkış işlemi için GET veya POST yöntemi olabilir
+        method: 'POST', // Çıkış işlemi için GET veya POST yöntemi olabilir
         body: credentials,
       }),
     }),
@@ -83,4 +88,4 @@ export const mainSlice = createApi({
 });
 
 // API uç noktalarını dışa aktar
-export const { useGetUsersQuery,useAddFcmTokenMutation } = mainSlice; // Örnek olarak getUsers query hook'unu dışa aktardık
+export const { useGetUsersQuery,useAddFcmTokenMutation,useGetHabitsQuery } = mainSlice; // Örnek olarak getUsers query hook'unu dışa aktardık

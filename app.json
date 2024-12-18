@@ -36,6 +36,11 @@
           "ios": {}
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "95ef4adc-ef33-4817-88a4-5603c6f4a3a7"
+      }
+    }
   }
 }
