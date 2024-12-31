@@ -9,7 +9,7 @@ async function getAndUpdateFcmToken(token,addFcmToken, userId) {
   try {
     // Yerel depolamada token'ı sakla
     const storedToken = await getStoredToken(); // Local storage veya AsyncStorage'dan token al
-
+console.log(storedToken,token,"storedToken")
     // Eğer token farklıysa, yeni token'ı sunucuya gönder
     if (storedToken !== token) {
       await sendTokenToServer(token,addFcmToken, userId);  // Token'ı sunucuya gönder
@@ -71,7 +71,7 @@ const useFcmToken = () => {
 
     // Zamanlayıcı ile token'ı belirli aralıklarla güncelle
     const intervalId = setInterval(async () => {
-      await updateFcmToken(); // 24 saatte bir token'ı kontrol et ve güncelle
+      await updateFcmToken(); 
     }, 60 * 1000); // 24 saat
 
     // Cleanup (component unmount olduğunda interval'ı temizle)

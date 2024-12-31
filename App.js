@@ -51,6 +51,8 @@ import Alert from "./components/modal/Alert";
 
 export default function App() {
   useEffect(() => {
+   
+
     async function requestPermission() {
       const authStatus = await messaging().requestPermission();
       const enabled =
